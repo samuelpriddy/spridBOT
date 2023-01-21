@@ -1,5 +1,7 @@
 import threading
 import berserk
+import chess
+import random
 
 # Useful Websites
 # https://berserk.readthedocs.io/en/master/usage.html
@@ -9,7 +11,25 @@ token = 'lip_e8lT0QKAbYWOx2RQc7Py'
 session = berserk.TokenSession(token)
 client = berserk.Client(session=session)
 
+def randomMoveGenerator(board):
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
+    for l1 in letters:
+        for n1 in numbers:
+            for l2 in letters:
+                for n2 in numbers:
+                    try:
+                        if chess.Move.from_uci(l1+n1+l2+n2) in board.legal_moves:
+                            return l1+n1+l2+n2
+                    except:
+                        pass
+    return ''
+
+
 class Game(threading.Thread):
+    lastMove = ''
+    board = chess.Board()
+
     def __init__(self, client, game_id, color, **kwargs):
 
         super().__init__(**kwargs)
@@ -23,8 +43,10 @@ class Game(threading.Thread):
         self.current_state = next(self.stream)
 
         if(color == 'white'):
-            client.bots.make_move(self.game_id, 'e2e4')
-
+            move = randomMoveGenerator(self.board)
+            client.bots.make_move(game_id, move)
+            self.board.push_uci(move)
+            self.lastMove = move
 
     def run(self):
 
@@ -35,7 +57,16 @@ class Game(threading.Thread):
                 self.handle_state_change(event)
 
     def handle_state_change(self, game_state):
-        print(self.game_id)
+        a = game_state['moves'].split(' ')
+
+        if(a[len(a)-1] != self.lastMove):
+            self.board.push_uci(a[len(a)-1])
+            move = randomMoveGenerator(self.board)
+            client.bots.make_move(self.game_id, move)
+            self.board.push_uci(move)
+            self.lastMove = move
+
+        
 
         
 
