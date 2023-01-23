@@ -14,16 +14,16 @@ client = berserk.Client(session=session)
 def randomMoveGenerator(board):
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
-    for l1 in letters:
-        for n1 in numbers:
-            for l2 in letters:
-                for n2 in numbers:
-                    try:
-                        if chess.Move.from_uci(l1+n1+l2+n2) in board.legal_moves:
-                            return l1+n1+l2+n2
-                    except:
-                        pass
-    return ''
+    while(True):
+        l1 = letters[random.randint(0,7)]
+        l2 = letters[random.randint(0,7)]
+        n1 = numbers[random.randint(0,7)]
+        n2 = numbers[random.randint(0,7)]
+        try:
+            if chess.Move.from_uci(l1+n1+l2+n2) in board.legal_moves:
+                return l1+n1+l2+n2
+        except:
+            pass
 
 
 class Game(threading.Thread):
